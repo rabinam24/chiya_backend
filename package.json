@@ -1,0 +1,16 @@
+{
+  "name": "backendproject",
+  "version": "1.0.0",
+  "description": "Learning backend from Chai aur code channel!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascipt",
+    "backend",
+    "coding"
+  ],
+  "author": "Rabinam",
+  "license": "ISC"
+}
