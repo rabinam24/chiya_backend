@@ -67,9 +67,35 @@ const getAllVideos = asyncHandler(async (req, res) => {
 });
 
 const publishAVideo = asyncHandler(async (req, res) => {
-    const { title, description} = req.body
+    const { title, description } = req.body;
     // TODO: get video, upload to cloudinary, create video
-})
+    try {
+        // Check if a file is included in the request
+        if (!req.file) {
+            return res.status(500).json(new ApiError(500, 'Please upload a video file'));
+        }
+
+        // Upload the video file to Cloudinary
+        const uploadedVideo = await cloudinary.uploader.upload(req.file.path, { resource_type: 'video' });
+
+        // Create a new video document in the database
+        const newVideo = new Video({
+            title,
+            description,
+            videoUrl: uploadedVideo.secure_url, // URL of the uploaded video on Cloudinary
+            cloudinaryPublicId: uploadedVideo.public_id // Public ID of the uploaded video on Cloudinary
+        });
+
+        // Save the new video document to the database
+        const savedVideo = await newVideo.save();
+
+        // Send a success response to the client
+        res.status(200).json(new ApiResponse(200, { data: savedVideo }, "Video is looking great"));
+    } catch (error) {
+        res.status(500).json(new ApiError(500, "Server Error"));
+    }
+});
+
 
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params
