@@ -100,13 +100,74 @@ const publishAVideo = asyncHandler(async (req, res) => {
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //TODO: get video by id
-})
+    try {
+        // check if provided VideoId is a valid ObjectId
+        if (!isValidObjectId(videoId)) {
+            return res
+            .status(400)
+            .json(new ApiError(400,"Invalid video ID"))  
+        };
+
+        // Find the video by its ID in database
+
+        const video = await Video.findById(videoId);
+
+        // check if the video exists
+        if (!video) {
+            return res
+            .status(400)
+            .json(new ApiError(400,"Video not found"))};
+
+        res
+        .status(200)
+        .json(new ApiResponse(200, {data:video},"Video Found"));
+
+    } catch (error) {
+        // Handle server error
+        res.status(500).json(new ApiError(500, "Server Error"));
+    }
+
+});
+
 
 const updateVideo = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
-    //TODO: update video details like title, description, thumbnail
+    const { videoId } = req.params;
+    //TODO: update video details title, description, thumbnail
+    const { title, description, thumbnail } = req.body;
 
-})
+    try {
+        if (!isValidObjectId(videoId)) {
+            return res.status(400).json(new ApiError(400, "Invalid video ID"));
+        }
+
+        let video = await Video.findById(videoId);
+
+        if (!video) {
+            return res.status(404).json(new ApiError(404, "Video not found"));
+        }
+
+        // Update the video details
+        if (title !== undefined) {
+            video.title = title;
+        }
+
+        if (description !== undefined) {
+            video.description = description;
+        }
+
+        if (thumbnail !== undefined) {
+            video.thumbnail = thumbnail;
+        }
+
+        // Save the updated video details to the database
+        video = await video.save();
+
+        // Send the updated video data in the response
+        res.status(200).json(new ApiResponse(200, { data: video }, "Video details updated successfully"));
+    } catch (error) {
+        res.status(500).json(new ApiError(500, "Server Error"));
+    }
+});
 
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
