@@ -172,10 +172,60 @@ const updateVideo = asyncHandler(async (req, res) => {
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //TODO: delete video
-})
+    try {
+        // Check if the provided videoId is a valid ObjectId
+        if (!isValidObjectId(videoId)) {
+            return res.status(400).json(new ApiError(400, 'Invalid video ID'));
+        }
+
+        // Find the video by its ID in the database
+        const video = await Video.findById(videoId);
+
+        // Check if the video exists
+        if (!video) {
+            return res.status(404).json(new ApiError(404, 'Video not found'));
+        }
+
+        // Delete the video from the database
+        await Video.deleteOne({ _id: videoId });
+
+        // Send a success response
+        res.status(200).json(new ApiResponse(200, null, 'Video deleted successfully'));
+    } catch (error) {
+        // Handle server errors
+        res.status(500).json(new ApiError(500, 'Server Error'));
+    }
+});
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
+    const { videoId } = req.params;
+
+    try {
+        // Check if the provided videoId is a valid ObjectId
+        if (!isValidObjectId(videoId)) {
+            return res.status(400).json(new ApiError(400, 'Invalid video ID'));
+        }
+
+        // Find the video by its ID in the database
+        const video = await Video.findById(videoId);
+
+        // Check if the video exists
+        if (!video) {
+            return res.status(404).json(new ApiError(404, 'Video not found'));
+        }
+
+        // Toggle the publish status
+        video.published = !video.published;
+
+        // Save the updated video with the toggled publish status
+        await video.save();
+
+        // Send a success response with the updated video data
+        res.status(200).json(new ApiResponse(200, { data: video }, 'Publish status toggled successfully'));
+    } catch (error) {
+        // Handle server errors
+        res.status(500).json(new ApiError(500, 'Server Error'));
+    }
 })
 
 export {
